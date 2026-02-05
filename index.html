@@ -1,49 +1,83 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>PopUp Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OlyBet Executive PopUp Editor</title>
     <style>
-        :root { --accent: #1CFF47; --bg: #f0f2f5; --panel: #292935; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; }
+        :root { --accent: #1CFF47; --bg: #f4f7f6; --panel: #292935; --brand: #e32d37; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar Styles */
-        .sidebar { width: 380px; background: white; padding: 25px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); overflow-y: auto; }
-        h2 { margin-top: 0; font-size: 22px; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .sidebar { width: 400px; background: white; padding: 25px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 10; }
+        .sidebar-content { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        
+        h2 { margin-top: 0; font-size: 20px; color: var(--brand); border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        
+        /* Стили упоминания команды */
+        .team-mention {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff5f5;
+            border-radius: 10px;
+            border: 1px dashed #e32d37;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #444;
+        }
+        .team-mention b { color: #e32d37; }
+        .heart { color: #e32d37; display: inline-block; animation: beat .3s infinite alternate; transform-origin: center; }
+        @keyframes beat { to { transform: scale(1.1); } }
+
         .group { margin-bottom: 15px; }
         label { display: block; font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 5px; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
-        textarea.input-text { height: 80px; resize: vertical; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none; }
+        input:focus, textarea:focus { border-color: #25BD95; }
+        textarea#main { height: 100px; resize: vertical; }
         
-        /* Workspace Styles */
-        .workspace { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; gap: 20px; }
-        .preview-area { background: #1a1a1a; border-radius: 12px; padding: 60px; display: flex; justify-content: center; align-items: center; min-height: 500px; }
-        .code-area { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        #output-code { width: 100%; height: 100px; font-family: monospace; font-size: 11px; margin-top: 10px; background: #fafafa; border: 1px solid #eee; }
+        .workspace { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; align-items: center; }
+        .preview-area { background: #1a1a1a; border-radius: 12px; padding: 60px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 800px; min-height: 450px; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); }
         
-        .copy-btn { background: #25BD95; color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; font-size: 16px; }
-        .copy-btn:hover { background: #1CFF47; color: black; }
+        .code-area { width: 100%; max-width: 800px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        textarea#output-code { width: 100%; height: 80px; font-family: 'Consolas', monospace; font-size: 11px; margin-top: 10px; background: #f8f9fa; border: 1px solid #eee; }
+        
+        .copy-btn { background: #25BD95; color: white; border: none; padding: 16px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; font-size: 16px; margin-top: 10px; }
+        .copy-btn:hover { background: #1CFF47; color: black; box-shadow: 0 4px 12px rgba(28, 255, 71, 0.3); }
+        .hint { font-size: 11px; color: #999; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2>Banner Editor</h2>
-    
-    <div class="group"><label>Image URL</label><input id="img" type="text" placeholder="https://..." oninput="generate()"></div>
-    <div class="group"><label>Sub Headline</label><input id="sub" type="text" placeholder="e.g. PRIZE POOL €100,000" oninput="generate()"></div>
-    <div class="group"><label>Headline</label><input id="head" type="text" placeholder="e.g. GRAND TOURNAMENT" oninput="generate()"></div>
-    <div class="group"><label>Main Text</label><textarea id="main" class="input-text" placeholder="Describe the promo..." oninput="generate()"></textarea></div>
-    <div class="group"><label>Button Text</label><input id="btn" type="text" placeholder="e.g. JOIN NOW" oninput="generate()"></div>
-    <div class="group"><label>Link URL</label><input id="link" type="text" placeholder="https://..." oninput="generate()"></div>
+    <div class="sidebar-content">
+        <h2>OlyBet PopUp Ediitor 🚀</h2>
+        
+        <div class="group"><label>Image URL</label><input id="img" type="text" placeholder="https://..." oninput="generate()"></div>
+        <div class="group"><label>Sub Headline</label><input id="sub" type="text" placeholder="e.g. PRIZE POOL €100,000" oninput="generate()"></div>
+        <div class="group"><label>Headline</label><input id="head" type="text" placeholder="e.g. GRAND TOURNAMENT" oninput="generate()"></div>
+        
+        <div class="group">
+            <label>Main Text</label>
+            <textarea id="main" placeholder="Describe the promo..." oninput="generate()"></textarea>
+            <div class="hint"><b>Ctrl + B</b> для жирного шрифта.</div>
+        </div>
+        
+        <div class="group"><label>Button Text</label><input id="btn" type="text" placeholder="e.g. JOIN NOW" oninput="generate()"></div>
+        <div class="group"><label>Link URL</label><input id="link" type="text" placeholder="https://..." oninput="generate()"></div>
 
-    <button class="copy-btn" onclick="copyCode()">COPY HTML CODE</button>
+        <button class="copy-btn" onclick="copyCode()">СКОПИРОВАТЬ КОД</button>
+
+        <div class="team-mention">
+            Made with <span class="heart">❤️</span> for <br>
+            <b>OlyBet Executive Team</b><br>
+            <small>(Veronika, Masha, Lera, Angelina, Kitija)</small>
+        </div>
+    </div>
 </div>
 
 <div class="workspace">
     <div class="preview-area" id="preview-box"></div>
     <div class="code-area">
-        <label>Final HTML</label>
+        <label>HTML Source</label>
         <textarea id="output-code" readonly></textarea>
     </div>
 </div>
@@ -53,38 +87,29 @@
 
     const mainTextarea = document.getElementById('main');
 
-    // Слушаем нажатие клавиш в поле Main Text
     mainTextarea.addEventListener('keydown', function(e) {
-        // Проверяем Ctrl + B (или Cmd + B на Mac)
         if ((e.ctrlKey || e.metaKey) && e.code === 'KeyB') {
-            e.preventDefault(); // Отменяем стандартное поведение (жирный шрифт в браузере)
-            
+            e.preventDefault();
             const start = this.selectionStart;
             const end = this.selectionEnd;
             const text = this.value;
-            
-            const before = text.substring(0, start);
-            const selection = text.substring(start, end);
-            const after = text.substring(end);
-            
-            // Оборачиваем выделение
-            this.value = before + '<strong>' + selection + '</strong>' + after;
-            
-            // Возвращаем курсор на место
-            this.selectionStart = start + 8; // Смещение на длину <strong>
+            this.value = text.substring(0, start) + '<strong>' + text.substring(start, end) + '</strong>' + text.substring(end);
+            this.focus();
+            this.selectionStart = start + 8;
             this.selectionEnd = end + 8;
-            
-            // Обновляем предпросмотр
             generate();
         }
     });
 
     function generate() {
+        const rawMainText = document.getElementById('main').value;
+        const formattedMainText = rawMainText.replace(/\n/g, '<br>') || 'The tournament description goes here.';
+
         let res = template
-            .replaceAll("[IMG LINK]", document.getElementById('img').value || 'https://via.placeholder.com/400x200/25bd95/ffffff?text=Banner+Image')
-            .replaceAll("[SUB HEADLINE]", document.getElementById('sub').value || 'SUB HEADLINE HERE')
+            .replaceAll("[IMG LINK]", document.getElementById('img').value || 'https://via.placeholder.com/400x200/292935/ffffff?text=OlyBet+Promo')
+            .replaceAll("[SUB HEADLINE]", document.getElementById('sub').value || 'SUB HEADLINE')
             .replaceAll("[HEADLINE]", document.getElementById('head').value || 'MAIN HEADLINE')
-            .replaceAll("[MAIN TEXT]", document.getElementById('main').value.replace(/\n/g, '<br>') || 'The tournament description goes here. Make it exciting!')
+            .replaceAll("[MAIN TEXT]", formattedMainText)
             .replaceAll("[BUTTON TEXT]", document.getElementById('btn').value || 'JOIN NOW')
             .replaceAll("[LINK]", document.getElementById('link').value || '#');
 
@@ -96,12 +121,13 @@
         const copyText = document.getElementById("output-code");
         copyText.select();
         document.execCommand("copy");
-        alert("Banner code copied!");
+        const btn = document.querySelector('.copy-btn');
+        btn.innerText = "COPIED! ✅";
+        setTimeout(() => { btn.innerText = "СКОПИРОВАТЬ КОД"; }, 1500);
     }
 
     generate();
 </script>
 
 </body>
-
 </html>
