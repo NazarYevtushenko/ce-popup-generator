@@ -80,49 +80,123 @@
 <script>
     const template = `<div class="popup" style="text-align: left; display: inline-block; font-family: 'Montserrat', sans-serif; background-color: #292935; border-radius: 12px; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; font-size: 14px; padding: 0; overflow: hidden;"><div style="text-align: center;"><img src="[IMG LINK]" alt="Promo" style="width: 100%; height: auto; display: block;"></div><div style="padding: 25px 25px 35px 25px; color: #ffffff; text-align: left;"><p style="margin: 0 0 10px 0; font-size: 14px; color: #e0e0e0; font-weight: 600;">[SUB HEADLINE]</p><h2 style="margin: 0 0 15px 0; font-family: 'Bebas Neue Pro', sans-serif; font-size: 34px; line-height: 1.1; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">[HEADLINE]</h2><p style="margin: 0 0 30px 0; font-size: 15px; line-height: 1.6; color: #d0d0d0;">[MAIN TEXT]</p><a href="[LINK]" target="_blank" style="text-decoration: none; display: block;"><span style="display: block; width: 100%; background: linear-gradient(90deg, #1CFF47 0%, #25BD95 100%); color: #000000; padding: 16px 0; font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 18px; border-radius: 6px; text-align: center; text-transform: uppercase; box-shadow: 0 10px 20px -5px rgba(28, 255, 71, 0.4);">[BUTTON TEXT]</span></a></div></div><style>#modal-title { display: none !important; } #modal-background { background: none !important; text-align: center; }</style>`;
 
-    const mainTextarea = document.getElementById('main');
+    const fields = ['img', 'sub', 'head', 'main', 'btn', 'link'];
+    let historyStack = [];
+    let redoStack = [];
+    let isProcessing = false;
 
-    // Функция импорта
+    // Снимок состояния
+    function getCurrentState() {
+        const state = {};
+        fields.forEach(id => {
+            state[id] = document.getElementById(id).value;
+        });
+        return JSON.stringify(state);
+    }
+
+    // Сохранение в историю
+    function saveState() {
+        if (isProcessing) return;
+        const currentState = getCurrentState();
+        const lastState = historyStack.length > 0 ? JSON.stringify(historyStack[historyStack.length - 1]) : null;
+
+        if (currentState !== lastState) {
+            historyStack.push(JSON.parse(currentState));
+            redoStack = []; 
+            if (historyStack.length > 50) historyStack.shift();
+        }
+    }
+
+    function applyState(state) {
+        if (!state) return;
+        isProcessing = true;
+        fields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = state[id] || "";
+        });
+        generate(true); // Генерируем без создания нового шага истории
+        isProcessing = false;
+    }
+
+    function undo() {
+        if (historyStack.length > 1) {
+            redoStack.push(historyStack.pop());
+            applyState(historyStack[historyStack.length - 1]);
+        }
+    }
+
+    function redo() {
+        if (redoStack.length > 0) {
+            const state = redoStack.pop();
+            historyStack.push(state);
+            applyState(state);
+        }
+    }
+
+    // ИМПОРТ HTML
     function importHTML() {
         const raw = document.getElementById('import-html').value;
         if (!raw) return alert("Сначала вставьте код!");
 
-        // Создаем временный элемент для парсинга
         const parser = new DOMParser();
         const doc = parser.parseFromString(raw, 'text/html');
 
         try {
-            document.getElementById('img').value = doc.querySelector('img')?.src || "";
+            isProcessing = true; // Блокируем авто-сохранение во время импорта
+
+            document.getElementById('img').value = doc.querySelector('img')?.getAttribute('src') || "";
             document.getElementById('sub').value = doc.querySelector('p[style*="font-weight: 600"]')?.innerText || "";
             document.getElementById('head').value = doc.querySelector('h2')?.innerText || "";
             
-            // Текст сохраняем с тегами strong, но меняем br на переносы
             let mainHtml = doc.querySelector('p[style*="line-height: 1.6"]')?.innerHTML || "";
-            document.getElementById('main').value = mainHtml.replace(/<br\s*[\/]?>/gi, "\n");
+            document.getElementById('main').value = mainHtml.replace(/<br\s*[\/]?>/gi, "\n").trim();
             
             document.getElementById('btn').value = doc.querySelector('span[style*="text-transform: uppercase"]')?.innerText || "";
-            document.getElementById('link').value = doc.querySelector('a')?.href || "";
+            
+            let linkElement = doc.querySelector('a');
+            document.getElementById('link').value = linkElement ? linkElement.getAttribute('href') : "";
 
+            isProcessing = false;
+            saveState(); // Сохраняем импортированное состояние как новый шаг истории
             generate();
-            alert("Данные успешно извлечены!");
+            alert("Импорт завершен!");
         } catch (e) {
-            alert("Не удалось распознать формат. Убедитесь, что это код баннера OlyBet.");
+            isProcessing = false;
+            alert("Ошибка при разборе кода. Проверьте формат.");
         }
     }
 
-    // Ctrl + B
-    mainTextarea.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.code === 'KeyB') {
+    // ГОРЯЧИЕ КЛАВИШИ
+    window.addEventListener('keydown', function(e) {
+        const isCmdOrCtrl = e.ctrlKey || e.metaKey;
+        if (isCmdOrCtrl && e.code === 'KeyZ' && !e.shiftKey) {
             e.preventDefault();
-            const start = this.selectionStart, end = this.selectionEnd, text = this.value;
-            this.value = text.substring(0, start) + '<strong>' + text.substring(start, end) + '</strong>' + text.substring(end);
-            this.focus();
-            this.selectionStart = start + 8; this.selectionEnd = end + 8;
-            generate();
+            undo();
+        }
+        if (isCmdOrCtrl && (e.code === 'KeyY' || (e.code === 'KeyZ' && e.shiftKey))) {
+            e.preventDefault();
+            redo();
+        }
+        if (isCmdOrCtrl && e.code === 'KeyB' && document.activeElement.id === 'main') {
+            e.preventDefault();
+            applyBold();
         }
     });
 
-    function generate() {
+    function applyBold() {
+        const el = document.getElementById('main');
+        const start = el.selectionStart, end = el.selectionEnd, text = el.value;
+        if (start === end) return;
+        
+        el.value = text.substring(0, start) + '<strong>' + text.substring(start, end) + '</strong>' + text.substring(end);
+        el.focus();
+        el.selectionStart = start + 8; el.selectionEnd = end + 8;
+        
+        saveState();
+        generate();
+    }
+
+    function generate(skipHistory = false) {
         const rawMainText = document.getElementById('main').value;
         const formattedMainText = rawMainText.replace(/\n/g, '<br>') || 'Description...';
 
@@ -136,6 +210,11 @@
 
         document.getElementById('output-code').value = res;
         document.getElementById('preview-box').innerHTML = res;
+
+        if (!isProcessing && !skipHistory) {
+            clearTimeout(window.saveTimeout);
+            window.saveTimeout = setTimeout(saveState, 500);
+        }
     }
 
     function copyCode() {
@@ -147,7 +226,11 @@
         setTimeout(() => { btn.innerText = "СКОПИРОВАТЬ НОВЫЙ КОД"; }, 1500);
     }
 
-    generate();
+    // Старт
+    window.onload = () => {
+        saveState();
+        generate();
+    };
 </script>
 </body>
 </html>
