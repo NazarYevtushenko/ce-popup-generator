@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tournament Banner Generator</title>
+    <title>PopUp Generator</title>
     <style>
         :root { --accent: #1CFF47; --bg: #f0f2f5; --panel: #292935; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; }
@@ -51,12 +51,40 @@
 <script>
     const template = `<div class="popup" style="text-align: left; display: inline-block; font-family: 'Montserrat', sans-serif; background-color: #292935; border-radius: 12px; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; font-size: 14px; padding: 0; overflow: hidden;"><div style="text-align: center;"><img src="[IMG LINK]" alt="Promo" style="width: 100%; height: auto; display: block;"></div><div style="padding: 25px 25px 35px 25px; color: #ffffff; text-align: left;"><p style="margin: 0 0 10px 0; font-size: 14px; color: #e0e0e0; font-weight: 600;">[SUB HEADLINE]</p><h2 style="margin: 0 0 15px 0; font-family: 'Bebas Neue Pro', sans-serif; font-size: 34px; line-height: 1.1; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">[HEADLINE]</h2><p style="margin: 0 0 30px 0; font-size: 15px; line-height: 1.6; color: #d0d0d0;">[MAIN TEXT]</p><a href="[LINK]" target="_blank" style="text-decoration: none; display: block;"><span style="display: block; width: 100%; background: linear-gradient(90deg, #1CFF47 0%, #25BD95 100%); color: #000000; padding: 16px 0; font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 18px; border-radius: 6px; text-align: center; text-transform: uppercase; box-shadow: 0 10px 20px -5px rgba(28, 255, 71, 0.4);">[BUTTON TEXT]</span></a></div></div><style>#modal-title { display: none !important; } #modal-background { background: none !important; text-align: center; }</style>`;
 
+    const mainTextarea = document.getElementById('main');
+
+    // Слушаем нажатие клавиш в поле Main Text
+    mainTextarea.addEventListener('keydown', function(e) {
+        // Проверяем Ctrl + B (или Cmd + B на Mac)
+        if ((e.ctrlKey || e.metaKey) && e.code === 'KeyB') {
+            e.preventDefault(); // Отменяем стандартное поведение (жирный шрифт в браузере)
+            
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const text = this.value;
+            
+            const before = text.substring(0, start);
+            const selection = text.substring(start, end);
+            const after = text.substring(end);
+            
+            // Оборачиваем выделение
+            this.value = before + '<strong>' + selection + '</strong>' + after;
+            
+            // Возвращаем курсор на место
+            this.selectionStart = start + 8; // Смещение на длину <strong>
+            this.selectionEnd = end + 8;
+            
+            // Обновляем предпросмотр
+            generate();
+        }
+    });
+
     function generate() {
         let res = template
             .replaceAll("[IMG LINK]", document.getElementById('img').value || 'https://via.placeholder.com/400x200/25bd95/ffffff?text=Banner+Image')
             .replaceAll("[SUB HEADLINE]", document.getElementById('sub').value || 'SUB HEADLINE HERE')
             .replaceAll("[HEADLINE]", document.getElementById('head').value || 'MAIN HEADLINE')
-            .replaceAll("[MAIN TEXT]", document.getElementById('main').value || 'The tournament description goes here. Make it exciting!')
+            .replaceAll("[MAIN TEXT]", document.getElementById('main').value.replace(/\n/g, '<br>') || 'The tournament description goes here. Make it exciting!')
             .replaceAll("[BUTTON TEXT]", document.getElementById('btn').value || 'JOIN NOW')
             .replaceAll("[LINK]", document.getElementById('link').value || '#');
 
@@ -71,9 +99,9 @@
         alert("Banner code copied!");
     }
 
-    // Initial render
     generate();
 </script>
 
 </body>
+
 </html>
