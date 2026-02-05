@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tournament Banner Generator</title>
+    <style>
+        :root { --accent: #1CFF47; --bg: #f0f2f5; --panel: #292935; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; }
+        
+        /* Sidebar Styles */
+        .sidebar { width: 380px; background: white; padding: 25px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); overflow-y: auto; }
+        h2 { margin-top: 0; font-size: 22px; color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; font-family: inherit; }
+        textarea.input-text { height: 80px; resize: vertical; }
+        
+        /* Workspace Styles */
+        .workspace { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; gap: 20px; }
+        .preview-area { background: #1a1a1a; border-radius: 12px; padding: 60px; display: flex; justify-content: center; align-items: center; min-height: 500px; }
+        .code-area { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        #output-code { width: 100%; height: 100px; font-family: monospace; font-size: 11px; margin-top: 10px; background: #fafafa; border: 1px solid #eee; }
+        
+        .copy-btn { background: #25BD95; color: white; border: none; padding: 15px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; font-size: 16px; }
+        .copy-btn:hover { background: #1CFF47; color: black; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Banner Editor</h2>
+    
+    <div class="group"><label>Image URL</label><input id="img" type="text" placeholder="https://..." oninput="generate()"></div>
+    <div class="group"><label>Sub Headline</label><input id="sub" type="text" placeholder="e.g. PRIZE POOL €100,000" oninput="generate()"></div>
+    <div class="group"><label>Headline</label><input id="head" type="text" placeholder="e.g. GRAND TOURNAMENT" oninput="generate()"></div>
+    <div class="group"><label>Main Text</label><textarea id="main" class="input-text" placeholder="Describe the promo..." oninput="generate()"></textarea></div>
+    <div class="group"><label>Button Text</label><input id="btn" type="text" placeholder="e.g. JOIN NOW" oninput="generate()"></div>
+    <div class="group"><label>Link URL</label><input id="link" type="text" placeholder="https://..." oninput="generate()"></div>
+
+    <button class="copy-btn" onclick="copyCode()">COPY HTML CODE</button>
+</div>
+
+<div class="workspace">
+    <div class="preview-area" id="preview-box"></div>
+    <div class="code-area">
+        <label>Final HTML</label>
+        <textarea id="output-code" readonly></textarea>
+    </div>
+</div>
+
+<script>
+    const template = `<div class="popup" style="text-align: left; display: inline-block; font-family: 'Montserrat', sans-serif; background-color: #292935; border-radius: 12px; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; font-size: 14px; padding: 0; overflow: hidden;"><div style="text-align: center;"><img src="[IMG LINK]" alt="Promo" style="width: 100%; height: auto; display: block;"></div><div style="padding: 25px 25px 35px 25px; color: #ffffff; text-align: left;"><p style="margin: 0 0 10px 0; font-size: 14px; color: #e0e0e0; font-weight: 600;">[SUB HEADLINE]</p><h2 style="margin: 0 0 15px 0; font-family: 'Bebas Neue Pro', sans-serif; font-size: 34px; line-height: 1.1; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">[HEADLINE]</h2><p style="margin: 0 0 30px 0; font-size: 15px; line-height: 1.6; color: #d0d0d0;">[MAIN TEXT]</p><a href="[LINK]" target="_blank" style="text-decoration: none; display: block;"><span style="display: block; width: 100%; background: linear-gradient(90deg, #1CFF47 0%, #25BD95 100%); color: #000000; padding: 16px 0; font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 18px; border-radius: 6px; text-align: center; text-transform: uppercase; box-shadow: 0 10px 20px -5px rgba(28, 255, 71, 0.4);">[BUTTON TEXT]</span></a></div></div><style>#modal-title { display: none !important; } #modal-background { background: none !important; text-align: center; }</style>`;
+
+    function generate() {
+        let res = template
+            .replaceAll("[IMG LINK]", document.getElementById('img').value || 'https://via.placeholder.com/400x200/25bd95/ffffff?text=Banner+Image')
+            .replaceAll("[SUB HEADLINE]", document.getElementById('sub').value || 'SUB HEADLINE HERE')
+            .replaceAll("[HEADLINE]", document.getElementById('head').value || 'MAIN HEADLINE')
+            .replaceAll("[MAIN TEXT]", document.getElementById('main').value || 'The tournament description goes here. Make it exciting!')
+            .replaceAll("[BUTTON TEXT]", document.getElementById('btn').value || 'JOIN NOW')
+            .replaceAll("[LINK]", document.getElementById('link').value || '#');
+
+        document.getElementById('output-code').value = res;
+        document.getElementById('preview-box').innerHTML = res;
+    }
+
+    function copyCode() {
+        const copyText = document.getElementById("output-code");
+        copyText.select();
+        document.execCommand("copy");
+        alert("Banner code copied!");
+    }
+
+    // Initial render
+    generate();
+</script>
+
+</body>
+</html>
