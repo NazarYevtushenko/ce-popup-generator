@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -8,8 +8,12 @@
         :root { --accent: #1CFF47; --bg: #f4f7f6; --panel: #292935; --brand: #e32d37; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
+        /* Sidebar */
         .sidebar { width: 420px; background: white; padding: 25px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 10; }
         .sidebar-content { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
+        
+        /* Logo Styles */
+        .brand-logo { width: 100%; max-width: 200px; height: auto; display: block; margin: 0 auto 20px auto; }
         
         h2 { margin-top: 0; font-size: 20px; color: var(--brand); border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
@@ -38,8 +42,10 @@
 <body>
 
 <div class="sidebar">
+    <img src="https://beefreefilestorage.optimove.net/images/001523/editor_images/Untitled%20design.png" alt="OlyBet Logo" class="brand-logo">
+    
     <div class="sidebar-content">
-        <h2>OlyBet Editor Pro 🚀</h2>
+        <h2>Editor Pro 🚀</h2>
         
         <div class="import-box">
             <label>ИМПОРТ СТАРОГО КОДА</label>
@@ -85,7 +91,6 @@
     let redoStack = [];
     let isProcessing = false;
 
-    // Снимок состояния
     function getCurrentState() {
         const state = {};
         fields.forEach(id => {
@@ -94,7 +99,6 @@
         return JSON.stringify(state);
     }
 
-    // Сохранение в историю
     function saveState() {
         if (isProcessing) return;
         const currentState = getCurrentState();
@@ -114,7 +118,7 @@
             const el = document.getElementById(id);
             if (el) el.value = state[id] || "";
         });
-        generate(true); // Генерируем без создания нового шага истории
+        generate(true);
         isProcessing = false;
     }
 
@@ -133,31 +137,23 @@
         }
     }
 
-    // ИМПОРТ HTML
     function importHTML() {
         const raw = document.getElementById('import-html').value;
         if (!raw) return alert("Сначала вставьте код!");
-
         const parser = new DOMParser();
         const doc = parser.parseFromString(raw, 'text/html');
-
         try {
-            isProcessing = true; // Блокируем авто-сохранение во время импорта
-
+            isProcessing = true;
             document.getElementById('img').value = doc.querySelector('img')?.getAttribute('src') || "";
             document.getElementById('sub').value = doc.querySelector('p[style*="font-weight: 600"]')?.innerText || "";
             document.getElementById('head').value = doc.querySelector('h2')?.innerText || "";
-            
             let mainHtml = doc.querySelector('p[style*="line-height: 1.6"]')?.innerHTML || "";
             document.getElementById('main').value = mainHtml.replace(/<br\s*[\/]?>/gi, "\n").trim();
-            
             document.getElementById('btn').value = doc.querySelector('span[style*="text-transform: uppercase"]')?.innerText || "";
-            
             let linkElement = doc.querySelector('a');
             document.getElementById('link').value = linkElement ? linkElement.getAttribute('href') : "";
-
             isProcessing = false;
-            saveState(); // Сохраняем импортированное состояние как новый шаг истории
+            saveState();
             generate();
             alert("Импорт завершен!");
         } catch (e) {
@@ -166,7 +162,6 @@
         }
     }
 
-    // ГОРЯЧИЕ КЛАВИШИ
     window.addEventListener('keydown', function(e) {
         const isCmdOrCtrl = e.ctrlKey || e.metaKey;
         if (isCmdOrCtrl && e.code === 'KeyZ' && !e.shiftKey) {
@@ -187,11 +182,9 @@
         const el = document.getElementById('main');
         const start = el.selectionStart, end = el.selectionEnd, text = el.value;
         if (start === end) return;
-        
         el.value = text.substring(0, start) + '<strong>' + text.substring(start, end) + '</strong>' + text.substring(end);
         el.focus();
         el.selectionStart = start + 8; el.selectionEnd = end + 8;
-        
         saveState();
         generate();
     }
@@ -199,7 +192,6 @@
     function generate(skipHistory = false) {
         const rawMainText = document.getElementById('main').value;
         const formattedMainText = rawMainText.replace(/\n/g, '<br>') || 'Description...';
-
         let res = template
             .replaceAll("[IMG LINK]", document.getElementById('img').value || 'https://via.placeholder.com/400x200/292935/ffffff?text=OlyBet+Promo')
             .replaceAll("[SUB HEADLINE]", document.getElementById('sub').value || 'SUB HEADLINE')
@@ -207,10 +199,8 @@
             .replaceAll("[MAIN TEXT]", formattedMainText)
             .replaceAll("[BUTTON TEXT]", document.getElementById('btn').value || 'JOIN NOW')
             .replaceAll("[LINK]", document.getElementById('link').value || '#');
-
         document.getElementById('output-code').value = res;
         document.getElementById('preview-box').innerHTML = res;
-
         if (!isProcessing && !skipHistory) {
             clearTimeout(window.saveTimeout);
             window.saveTimeout = setTimeout(saveState, 500);
@@ -226,7 +216,6 @@
         setTimeout(() => { btn.innerText = "СКОПИРОВАТЬ НОВЫЙ КОД"; }, 1500);
     }
 
-    // Старт
     window.onload = () => {
         saveState();
         generate();
@@ -234,4 +223,3 @@
 </script>
 </body>
 </html>
-
