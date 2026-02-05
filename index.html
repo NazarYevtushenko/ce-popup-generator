@@ -3,73 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OlyBet Executive PopUp Editor</title>
+    <title>OlyBet Executive Editor Pro</title>
     <style>
         :root { --accent: #1CFF47; --bg: #f4f7f6; --panel: #292935; --brand: #e32d37; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .sidebar { width: 400px; background: white; padding: 25px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 10; }
-        .sidebar-content { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        .sidebar { width: 420px; background: white; padding: 25px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 10; }
+        .sidebar-content { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
         
         h2 { margin-top: 0; font-size: 20px; color: var(--brand); border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
-        /* Стили упоминания команды */
-        .team-mention {
-            margin-top: 20px;
-            padding: 15px;
-            background: #fff5f5;
-            border-radius: 10px;
-            border: 1px dashed #e32d37;
-            font-size: 13px;
-            line-height: 1.4;
-            color: #444;
-        }
-        .team-mention b { color: #e32d37; }
-        .heart { color: #e32d37; display: inline-block; animation: beat .3s infinite alternate; transform-origin: center; }
+        .import-box { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 20px; }
+        .import-box label { color: var(--brand); font-weight: 800; }
+        
+        .group { margin-bottom: 12px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 13px; outline: none; }
+        input:focus, textarea:focus { border-color: var(--brand); }
+        
+        .workspace { flex-grow: 1; padding: 30px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; align-items: center; }
+        .preview-area { background: #1a1a1a; border-radius: 12px; padding: 40px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 800px; min-height: 400px; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); }
+        
+        .code-area { width: 100%; max-width: 800px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        textarea#output-code { width: 100%; height: 70px; font-family: 'Consolas', monospace; font-size: 11px; margin-top: 5px; background: #f8f9fa; border: 1px solid #eee; }
+        
+        .copy-btn { background: #25BD95; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; font-size: 14px; margin-top: 5px; }
+        .import-btn { background: var(--panel); color: white; border: none; padding: 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 5px; width: 100%; }
+        
+        .team-mention { margin-top: 15px; padding: 12px; background: #fff5f5; border-radius: 10px; border: 1px dashed #e32d37; font-size: 12px; color: #444; text-align: center; }
+        .heart { color: #e32d37; animation: beat .3s infinite alternate; display: inline-block; }
         @keyframes beat { to { transform: scale(1.1); } }
-
-        .group { margin-bottom: 15px; }
-        label { display: block; font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 5px; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; outline: none; }
-        input:focus, textarea:focus { border-color: #25BD95; }
-        textarea#main { height: 100px; resize: vertical; }
-        
-        .workspace { flex-grow: 1; padding: 40px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; align-items: center; }
-        .preview-area { background: #1a1a1a; border-radius: 12px; padding: 60px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 800px; min-height: 450px; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); }
-        
-        .code-area { width: 100%; max-width: 800px; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        textarea#output-code { width: 100%; height: 80px; font-family: 'Consolas', monospace; font-size: 11px; margin-top: 10px; background: #f8f9fa; border: 1px solid #eee; }
-        
-        .copy-btn { background: #25BD95; color: white; border: none; padding: 16px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; font-size: 16px; margin-top: 10px; }
-        .copy-btn:hover { background: #1CFF47; color: black; box-shadow: 0 4px 12px rgba(28, 255, 71, 0.3); }
-        .hint { font-size: 11px; color: #999; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <div class="sidebar-content">
-        <h2>OlyBet PopUp Ediitor 🚀</h2>
+        <h2>OlyBet Editor Pro 🚀</h2>
         
-        <div class="group"><label>Image URL</label><input id="img" type="text" placeholder="https://..." oninput="generate()"></div>
-        <div class="group"><label>Sub Headline</label><input id="sub" type="text" placeholder="e.g. PRIZE POOL €100,000" oninput="generate()"></div>
-        <div class="group"><label>Headline</label><input id="head" type="text" placeholder="e.g. GRAND TOURNAMENT" oninput="generate()"></div>
+        <div class="import-box">
+            <label>ИМПОРТ СТАРОГО КОДА</label>
+            <textarea id="import-html" style="height: 60px; margin-top: 8px;" placeholder="Вставьте сюда готовый HTML-код баннера..."></textarea>
+            <button class="import-btn" onclick="importHTML()">РАЗОБРАТЬ ПО ПОЛЯМ ↑</button>
+        </div>
+
+        <div class="group"><label>Image URL</label><input id="img" type="text" oninput="generate()"></div>
+        <div class="group"><label>Sub Headline</label><input id="sub" type="text" oninput="generate()"></div>
+        <div class="group"><label>Headline</label><input id="head" type="text" oninput="generate()"></div>
         
         <div class="group">
-            <label>Main Text</label>
-            <textarea id="main" placeholder="Describe the promo..." oninput="generate()"></textarea>
-            <div class="hint"><b>Ctrl + B</b> для жирного шрифта.</div>
+            <label>Main Text (Ctrl+B = Bold)</label>
+            <textarea id="main" oninput="generate()" style="height: 80px;"></textarea>
         </div>
         
-        <div class="group"><label>Button Text</label><input id="btn" type="text" placeholder="e.g. JOIN NOW" oninput="generate()"></div>
-        <div class="group"><label>Link URL</label><input id="link" type="text" placeholder="https://..." oninput="generate()"></div>
+        <div class="group"><label>Button Text</label><input id="btn" type="text" oninput="generate()"></div>
+        <div class="group"><label>Link URL</label><input id="link" type="text" oninput="generate()"></div>
 
-        <button class="copy-btn" onclick="copyCode()">СКОПИРОВАТЬ КОД</button>
+        <button class="copy-btn" onclick="copyCode()">СКОПИРОВАТЬ НОВЫЙ КОД</button>
 
         <div class="team-mention">
             Made with <span class="heart">❤️</span> for <br>
             <b>OlyBet Executive Team</b><br>
-            <small>(Veronika, Masha, Lera, Angelina, Kitija)</small>
+            <small>(Вероника, Маша, Лера, Ангелина, Кития)</small>
         </div>
     </div>
 </div>
@@ -87,23 +82,49 @@
 
     const mainTextarea = document.getElementById('main');
 
+    // Функция импорта
+    function importHTML() {
+        const raw = document.getElementById('import-html').value;
+        if (!raw) return alert("Сначала вставьте код!");
+
+        // Создаем временный элемент для парсинга
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(raw, 'text/html');
+
+        try {
+            document.getElementById('img').value = doc.querySelector('img')?.src || "";
+            document.getElementById('sub').value = doc.querySelector('p[style*="font-weight: 600"]')?.innerText || "";
+            document.getElementById('head').value = doc.querySelector('h2')?.innerText || "";
+            
+            // Текст сохраняем с тегами strong, но меняем br на переносы
+            let mainHtml = doc.querySelector('p[style*="line-height: 1.6"]')?.innerHTML || "";
+            document.getElementById('main').value = mainHtml.replace(/<br\s*[\/]?>/gi, "\n");
+            
+            document.getElementById('btn').value = doc.querySelector('span[style*="text-transform: uppercase"]')?.innerText || "";
+            document.getElementById('link').value = doc.querySelector('a')?.href || "";
+
+            generate();
+            alert("Данные успешно извлечены!");
+        } catch (e) {
+            alert("Не удалось распознать формат. Убедитесь, что это код баннера OlyBet.");
+        }
+    }
+
+    // Ctrl + B
     mainTextarea.addEventListener('keydown', function(e) {
         if ((e.ctrlKey || e.metaKey) && e.code === 'KeyB') {
             e.preventDefault();
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
-            const text = this.value;
+            const start = this.selectionStart, end = this.selectionEnd, text = this.value;
             this.value = text.substring(0, start) + '<strong>' + text.substring(start, end) + '</strong>' + text.substring(end);
             this.focus();
-            this.selectionStart = start + 8;
-            this.selectionEnd = end + 8;
+            this.selectionStart = start + 8; this.selectionEnd = end + 8;
             generate();
         }
     });
 
     function generate() {
         const rawMainText = document.getElementById('main').value;
-        const formattedMainText = rawMainText.replace(/\n/g, '<br>') || 'The tournament description goes here.';
+        const formattedMainText = rawMainText.replace(/\n/g, '<br>') || 'Description...';
 
         let res = template
             .replaceAll("[IMG LINK]", document.getElementById('img').value || 'https://via.placeholder.com/400x200/292935/ffffff?text=OlyBet+Promo')
@@ -118,16 +139,15 @@
     }
 
     function copyCode() {
-        const copyText = document.getElementById("output-code");
-        copyText.select();
+        const out = document.getElementById("output-code");
+        out.select();
         document.execCommand("copy");
         const btn = document.querySelector('.copy-btn');
-        btn.innerText = "COPIED! ✅";
-        setTimeout(() => { btn.innerText = "СКОПИРОВАТЬ КОД"; }, 1500);
+        btn.innerText = "УСПЕШНО СКОПИРОВАНО!";
+        setTimeout(() => { btn.innerText = "СКОПИРОВАТЬ НОВЫЙ КОД"; }, 1500);
     }
 
     generate();
 </script>
-
 </body>
 </html>
