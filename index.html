@@ -25,6 +25,10 @@
         input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 13px; outline: none; }
         input:focus, textarea:focus { border-color: var(--brand); }
         
+        /* Upload Button Specific */
+        .upload-btn { background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%; text-transform: uppercase; transition: 0.2s; }
+        .upload-btn:hover { background: #0056b3; }
+
         .workspace { flex-grow: 1; padding: 30px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; align-items: center; }
         .preview-area { background: #1a1a1a; border-radius: 12px; padding: 40px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 800px; min-height: 400px; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); }
         
@@ -53,7 +57,14 @@
             <button class="import-btn" onclick="importHTML()">РАЗОБРАТЬ ПО ПОЛЯМ ↑</button>
         </div>
 
-        <div class="group"><label>Image URL</label><input id="img" type="text" oninput="generate()"></div>
+        <div class="group">
+            <label>Image URL</label>
+            <input id="img" type="text" oninput="generate()" placeholder="Paste image link here...">
+            <button class="upload-btn" onclick="window.open('hhttps://oeg.optimove.net/#/category/One-to-One_Campaigns/templates/show/15?brandId=Obbaltics&folderId=12&typeId=8&search=&channelId=15', '_blank')">
+                ☁️ Upload in Optimove
+            </button>
+        </div>
+
         <div class="group"><label>Sub Headline</label><input id="sub" type="text" oninput="generate()"></div>
         <div class="group"><label>Headline</label><input id="head" type="text" oninput="generate()"></div>
         
