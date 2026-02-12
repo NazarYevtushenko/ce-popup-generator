@@ -25,7 +25,11 @@
         input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 13px; outline: none; }
         input:focus, textarea:focus { border-color: var(--brand); }
         
-        /* Upload Button Specific */
+        /* Checkbox styling */
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; }
+        .checkbox-group input { width: auto; cursor: pointer; }
+        .checkbox-group span { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; }
+
         .upload-btn { background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%; text-transform: uppercase; transition: 0.2s; }
         .upload-btn:hover { background: #0056b3; }
 
@@ -73,8 +77,19 @@
             <textarea id="main" oninput="generate()" style="height: 80px;"></textarea>
         </div>
         
-        <div class="group"><label>Button Text</label><input id="btn" type="text" oninput="generate()"></div>
-        <div class="group"><label>Link URL</label><input id="link" type="text" oninput="generate()"></div>
+        <div class="group">
+            <label class="checkbox-group">
+                <input type="checkbox" id="cta-toggle" checked onchange="generate()">
+                <span>Показывать кнопку (Link & CTA)</span>
+            </label>
+            <label>Button Text</label>
+            <input id="btn" type="text" oninput="generate()">
+        </div>
+        
+        <div class="group">
+            <label>Link URL</label>
+            <input id="link" type="text" oninput="generate()">
+        </div>
 
         <button class="copy-btn" onclick="copyCode()">СКОПИРОВАТЬ НОВЫЙ КОД</button>
 
@@ -95,7 +110,9 @@
 </div>
 
 <script>
-    const template = `<div class="popup" style="text-align: left; display: inline-block; font-family: 'Montserrat', sans-serif; background-color: #292935; border-radius: 12px; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; font-size: 14px; padding: 0; overflow: hidden;"><div style="text-align: center;"><img src="[IMG LINK]" alt="Promo" style="width: 100%; height: auto; display: block;"></div><div style="padding: 25px 25px 35px 25px; color: #ffffff; text-align: left;"><p style="margin: 0 0 10px 0; font-size: 14px; color: #e0e0e0; font-weight: 600;">[SUB HEADLINE]</p><h2 style="margin: 0 0 15px 0; font-family: 'Bebas Neue Pro', sans-serif; font-size: 34px; line-height: 1.1; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">[HEADLINE]</h2><p style="margin: 0 0 30px 0; font-size: 15px; line-height: 1.6; color: #d0d0d0;">[MAIN TEXT]</p><a href="[LINK]" target="_blank" style="text-decoration: none; display: block;"><span style="display: block; width: 100%; background: linear-gradient(90deg, #1CFF47 0%, #25BD95 100%); color: #000000; padding: 16px 0; font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 18px; border-radius: 6px; text-align: center; text-transform: uppercase; box-shadow: 0 10px 20px -5px rgba(28, 255, 71, 0.4);">[BUTTON TEXT]</span></a></div></div><style>#modal-title { display: none !important; } #modal-background { background: none !important; text-align: center; }</style>`;
+    const template = `<div class="popup" style="text-align: left; display: inline-block; font-family: 'Montserrat', sans-serif; background-color: #292935; border-radius: 12px; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; font-size: 14px; padding: 0; overflow: hidden;"><div style="text-align: center;"><img src="[IMG LINK]" alt="Promo" style="width: 100%; height: auto; display: block;"></div><div style="padding: 25px 25px 35px 25px; color: #ffffff; text-align: left;"><p style="margin: 0 0 10px 0; font-size: 14px; color: #e0e0e0; font-weight: 600;">[SUB HEADLINE]</p><h2 style="margin: 0 0 15px 0; font-family: 'Bebas Neue Pro', sans-serif; font-size: 34px; line-height: 1.1; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">[HEADLINE]</h2><p style="margin: 0 0 30px 0; font-size: 15px; line-height: 1.6; color: #d0d0d0;">[MAIN TEXT]</p>[CTA_BLOCK]</div></div><style>#modal-title { display: none !important; } #modal-background { background: none !important; text-align: center; }</style>`;
+
+    const ctaSubTemplate = `<a href="[LINK]" target="_blank" style="text-decoration: none; display: block;"><span style="display: block; width: 100%; background: linear-gradient(90deg, #1CFF47 0%, #25BD95 100%); color: #000000; padding: 16px 0; font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 18px; border-radius: 6px; text-align: center; text-transform: uppercase; box-shadow: 0 10px 20px -5px rgba(28, 255, 71, 0.4);">[BUTTON TEXT]</span></a>`;
 
     const fields = ['img', 'sub', 'head', 'main', 'btn', 'link'];
     let historyStack = [];
@@ -107,6 +124,7 @@
         fields.forEach(id => {
             state[id] = document.getElementById(id).value;
         });
+        state['ctaEnabled'] = document.getElementById('cta-toggle').checked;
         return JSON.stringify(state);
     }
 
@@ -129,6 +147,7 @@
             const el = document.getElementById(id);
             if (el) el.value = state[id] || "";
         });
+        document.getElementById('cta-toggle').checked = state['ctaEnabled'] !== false;
         generate(true);
         isProcessing = false;
     }
@@ -160,9 +179,18 @@
             document.getElementById('head').value = doc.querySelector('h2')?.innerText || "";
             let mainHtml = doc.querySelector('p[style*="line-height: 1.6"]')?.innerHTML || "";
             document.getElementById('main').value = mainHtml.replace(/<br\s*[\/]?>/gi, "\n").trim();
-            document.getElementById('btn').value = doc.querySelector('span[style*="text-transform: uppercase"]')?.innerText || "";
-            let linkElement = doc.querySelector('a');
-            document.getElementById('link').value = linkElement ? linkElement.getAttribute('href') : "";
+            
+            const btnEl = doc.querySelector('span[style*="text-transform: uppercase"]');
+            const linkEl = doc.querySelector('a');
+            
+            if (btnEl || linkEl) {
+                document.getElementById('cta-toggle').checked = true;
+                document.getElementById('btn').value = btnEl?.innerText || "";
+                document.getElementById('link').value = linkEl ? linkEl.getAttribute('href') : "";
+            } else {
+                document.getElementById('cta-toggle').checked = false;
+            }
+
             isProcessing = false;
             saveState();
             generate();
@@ -203,15 +231,25 @@
     function generate(skipHistory = false) {
         const rawMainText = document.getElementById('main').value;
         const formattedMainText = rawMainText.replace(/\n/g, '<br>') || 'Description...';
+        const isCtaEnabled = document.getElementById('cta-toggle').checked;
+        
+        let ctaHtml = "";
+        if (isCtaEnabled) {
+            ctaHtml = ctaSubTemplate
+                .replaceAll("[LINK]", document.getElementById('link').value || '#')
+                .replaceAll("[BUTTON TEXT]", document.getElementById('btn').value || 'JOIN NOW');
+        }
+
         let res = template
             .replaceAll("[IMG LINK]", document.getElementById('img').value || 'https://via.placeholder.com/400x200/292935/ffffff?text=OlyBet+Promo')
             .replaceAll("[SUB HEADLINE]", document.getElementById('sub').value || 'SUB HEADLINE')
             .replaceAll("[HEADLINE]", document.getElementById('head').value || 'MAIN HEADLINE')
             .replaceAll("[MAIN TEXT]", formattedMainText)
-            .replaceAll("[BUTTON TEXT]", document.getElementById('btn').value || 'JOIN NOW')
-            .replaceAll("[LINK]", document.getElementById('link').value || '#');
+            .replaceAll("[CTA_BLOCK]", ctaHtml);
+
         document.getElementById('output-code').value = res;
         document.getElementById('preview-box').innerHTML = res;
+
         if (!isProcessing && !skipHistory) {
             clearTimeout(window.saveTimeout);
             window.saveTimeout = setTimeout(saveState, 500);
@@ -234,4 +272,3 @@
 </script>
 </body>
 </html>
-
