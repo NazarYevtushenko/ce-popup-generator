@@ -17,41 +17,49 @@ function toggleView(view) {
 function loadSharedAssets() {
     assetsRef.on('value', (snapshot) => {
         const display = document.getElementById('assets-display');
+        const folderList = document.getElementById('folder-list'); // Наш список для автоподстановки
         const data = snapshot.val();
+        
         display.innerHTML = '';
+        if (folderList) folderList.innerHTML = ''; // Очищаем список папок
 
         if (data) {
             const folders = {};
+            const uniqueFolderNames = new Set(); // Для хранения уникальных имен папок
+
             // Группируем данные
             Object.keys(data).forEach(key => {
                 const item = data[key];
                 const fName = item.folder || 'Общие';
                 if (!folders[fName]) folders[fName] = [];
                 folders[fName].push({ ...item, key });
+                uniqueFolderNames.add(fName);
             });
 
-            // Рендерим папки
-            Object.keys(folders).forEach(fName => {
+            // Обновляем datalist (список существующих папок для выбора)
+            uniqueFolderNames.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                folderList.appendChild(option);
+            });
+
+            // Рендерим папки (Windows Style)
+            Object.keys(folders).sort().forEach(fName => {
                 const folderGroup = document.createElement('div');
                 folderGroup.className = 'folder-group';
                 
-                // Заголовок папки (как в проводнике)
                 const header = document.createElement('div');
                 header.className = 'folder-header';
                 header.innerHTML = `
                     <span class="folder-icon">📂</span>
                     <span class="folder-title">${fName}</span>
-                    <span style="font-size: 10px; color: #999;">(${folders[fName].length})</span>
+                    <span style="font-size: 10px; color: #999; margin-left: 5px;">(${folders[fName].length})</span>
                 `;
                 
-                // Логика открытия/закрытия
-                header.onclick = () => {
-                    folderGroup.classList.toggle('open');
-                };
+                header.onclick = () => folderGroup.classList.toggle('open');
 
                 const content = document.createElement('div');
-                content.className = 'folder-content';
-                content.className += currentView === 'grid' ? ' assets-grid' : ' assets-list';
+                content.className = 'folder-content ' + (currentView === 'grid' ? 'assets-grid' : 'assets-list');
 
                 folders[fName].forEach(item => {
                     const div = document.createElement('div');
@@ -64,7 +72,7 @@ function loadSharedAssets() {
                     }
                     
                     div.onclick = (e) => {
-                        e.stopPropagation(); // Чтобы папка не закрылась при выборе файла
+                        e.stopPropagation();
                         document.getElementById('img').value = item.url;
                         generate();
                     };
@@ -84,17 +92,6 @@ function loadSharedAssets() {
             });
         }
     });
-}
-
-function addAssetToCloud() {
-    const url = document.getElementById('img').value;
-    const name = document.getElementById('asset-name').value;
-    const folder = document.getElementById('asset-folder').value || 'Общие';
-    if (url && name) {
-        assetsRef.push({ name, url, folder });
-        document.getElementById('asset-name').value = '';
-        document.getElementById('asset-folder').value = '';
-    }
 }
 
 // --- РЕДАКТОР ---
@@ -175,3 +172,4 @@ window.addEventListener('keydown', e => {
 
 
 window.onload = () => { loadSharedAssets(); generate(); };
+
