@@ -3,7 +3,7 @@ body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margi
 
 .sidebar { width: 420px; background: white; padding: 25px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 10; }
 .sidebar-content { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
-.brand-logo { width: 100%; max-width: 200px; height: auto; display: block; margin: 0 auto 20px auto; }
+.brand-logo { width: 100%; max-width: 100px; height: auto; display: block; margin: 0 auto 20px auto; }
 h2 { margin-top: 0; font-size: 20px; color: var(--brand); border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 
 .assets-container { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin-bottom: 20px; }
@@ -41,4 +41,5 @@ textarea#output-code { width: 100%; height: 70px; font-family: 'Consolas', monos
 
 .team-mention { margin-top: 15px; padding: 12px; background: #fff5f5; border-radius: 10px; border: 1px dashed #e32d37; font-size: 12px; color: #444; text-align: center; }
 .heart { color: #e32d37; animation: beat .3s infinite alternate; display: inline-block; }
+
 @keyframes beat { to { transform: scale(1.1); } }
