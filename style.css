@@ -20,8 +20,63 @@ h2 { margin-top: 0; font-size: 20px; color: var(--brand); border-bottom: 2px sol
 .asset-list-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: white; border: 1px solid #eee; border-radius: 6px; cursor: pointer; }
 .asset-list-item img { width: 30px; height: 30px; object-fit: contain; background: #292935; border-radius: 4px; }
 
-.folder-group { margin-top: 15px; width: 100%; }
-.folder-title { font-size: 11px; font-weight: 800; color: #0369a1; text-transform: uppercase; border-bottom: 1px solid #bae6fd; padding-bottom: 3px; margin-bottom: 8px; }
+/* Папки в стиле Windows */
+.folder-group {
+    margin-bottom: 5px;
+    border: 1px solid transparent;
+}
+
+.folder-header {
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    background: #f0f0f0;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.folder-header:hover {
+    background: #e0e0e0;
+}
+
+/* Иконка стрелочки перед папкой */
+.folder-header::before {
+    content: '▶';
+    display: inline-block;
+    font-size: 8px;
+    margin-right: 8px;
+    transition: transform 0.2s;
+    color: #666;
+}
+
+.folder-group.open .folder-header::before {
+    transform: rotate(90deg);
+}
+
+/* Иконка самой папки */
+.folder-icon {
+    margin-right: 8px;
+    color: #f8d775; /* Золотистый цвет папок Windows */
+}
+
+.folder-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    flex-grow: 1;
+}
+
+/* Контейнер с файлами внутри папки */
+.folder-content {
+    display: none; /* Скрыто по умолчанию */
+    padding: 10px 5px 10px 20px;
+}
+
+.folder-group.open .folder-content {
+    display: flex; /* Показываем при открытии */
+}
 
 .import-box { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 20px; }
 .group { margin-bottom: 12px; }
@@ -43,3 +98,4 @@ textarea#output-code { width: 100%; height: 70px; font-family: 'Consolas', monos
 .heart { color: #e32d37; animation: beat .3s infinite alternate; display: inline-block; }
 
 @keyframes beat { to { transform: scale(1.1); } }
+
