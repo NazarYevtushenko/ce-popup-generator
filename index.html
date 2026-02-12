@@ -26,10 +26,14 @@
             </div>
             <div id="assets-display"></div>
             <div class="asset-add-form">
-                <input id="asset-name" type="text" placeholder="Название">
-                <input id="asset-folder" type="text" placeholder="Папка">
-                <button onclick="addAssetToCloud()" class="upload-btn green">Добавить в облако</button>
-            </div>
+    <input id="asset-name" type="text" placeholder="Название файла">
+    
+    <input id="asset-folder" list="folder-list" type="text" placeholder="Выбрать или создать папку">
+    <datalist id="folder-list">
+        </datalist>
+    
+    <button onclick="addAssetToCloud()" class="upload-btn green">Добавить в облако</button>
+</div>
         </div>
         
         <div class="import-box">
@@ -91,4 +95,5 @@
 </body>
 
 </html>
+
 
