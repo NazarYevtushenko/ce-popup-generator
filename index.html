@@ -4,43 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OlyBet Executive Editor Pro</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    
     <style>
         :root { --accent: #1CFF47; --bg: #f4f7f6; --panel: #292935; --brand: #e32d37; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 420px; background: white; padding: 25px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; z-index: 10; }
         .sidebar-content { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
         
-        /* Logo Styles */
         .brand-logo { width: 100%; max-width: 200px; height: auto; display: block; margin: 0 auto 20px auto; }
-        
         h2 { margin-top: 0; font-size: 20px; color: var(--brand); border-bottom: 2px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
+        /* Общая библиотека */
+        .assets-container { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin-bottom: 20px; }
+        .assets-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; min-height: 50px; }
+        .asset-item { width: 45px; height: 45px; background: #292935; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: bold; text-align: center; overflow: hidden; border: 2px solid transparent; transition: 0.2s; position: relative; }
+        .asset-item:hover { border-color: var(--accent); transform: scale(1.05); }
+        .asset-item img { width: 100%; height: 100%; object-fit: contain; }
+
         .import-box { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 20px; }
-        .import-box label { color: var(--brand); font-weight: 800; }
-        
         .group { margin-bottom: 12px; }
         label { display: block; font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; margin-bottom: 4px; }
         input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 13px; outline: none; }
-        input:focus, textarea:focus { border-color: var(--brand); }
         
-        /* Checkbox styling */
         .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; }
-        .checkbox-group input { width: auto; cursor: pointer; }
-        .checkbox-group span { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; }
+        .checkbox-group input { width: auto; }
 
-        .upload-btn { background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%; text-transform: uppercase; transition: 0.2s; }
-        .upload-btn:hover { background: #0056b3; }
-
-        .workspace { flex-grow: 1; padding: 30px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; align-items: center; }
-        .preview-area { background: #1a1a1a; border-radius: 12px; padding: 40px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 800px; min-height: 400px; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); }
-        
-        .code-area { width: 100%; max-width: 800px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        textarea#output-code { width: 100%; height: 70px; font-family: 'Consolas', monospace; font-size: 11px; margin-top: 5px; background: #f8f9fa; border: 1px solid #eee; }
-        
+        .upload-btn { background: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%; text-transform: uppercase; }
         .copy-btn { background: #25BD95; color: white; border: none; padding: 14px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; font-size: 14px; margin-top: 5px; }
         .import-btn { background: var(--panel); color: white; border: none; padding: 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 5px; width: 100%; }
+        
+        .workspace { flex-grow: 1; padding: 30px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; align-items: center; }
+        .preview-area { background: #1a1a1a; border-radius: 12px; padding: 40px; display: flex; justify-content: center; align-items: center; width: 100%; max-width: 800px; min-height: 400px; box-shadow: inset 0 0 50px rgba(0,0,0,0.3); }
+        .code-area { width: 100%; max-width: 800px; background: white; padding: 15px; border-radius: 12px; }
+        textarea#output-code { width: 100%; height: 70px; font-family: 'Consolas', monospace; font-size: 11px; background: #f8f9fa; border: 1px solid #eee; }
         
         .team-mention { margin-top: 15px; padding: 12px; background: #fff5f5; border-radius: 10px; border: 1px dashed #e32d37; font-size: 12px; color: #444; text-align: center; }
         .heart { color: #e32d37; animation: beat .3s infinite alternate; display: inline-block; }
@@ -54,17 +53,27 @@
     
     <div class="sidebar-content">
         <h2>Editor Pro 🚀</h2>
+
+        <div class="assets-container">
+            <label style="color: #0369a1;">☁️ ОБЩАЯ БИБЛИОТЕКА (Executive Team)</label>
+            <div id="assets-grid" class="assets-grid"></div>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <input id="asset-name" type="text" placeholder="Название (UCL, Euro...)" style="padding: 5px; font-size: 11px;">
+                <button onclick="addAssetToCloud()" class="upload-btn" style="width: 40px; margin:0; background:#28a745;">+</button>
+            </div>
+            <div style="font-size: 9px; color: #666; margin-top: 5px;">* Правый клик по иконке, чтобы удалить у всех</div>
+        </div>
         
         <div class="import-box">
             <label>ИМПОРТ СТАРОГО КОДА</label>
-            <textarea id="import-html" style="height: 60px; margin-top: 8px;" placeholder="Вставьте сюда готовый HTML-код баннера..."></textarea>
+            <textarea id="import-html" style="height: 60px; margin-top: 8px;" placeholder="Вставьте сюда готовый HTML-код..."></textarea>
             <button class="import-btn" onclick="importHTML()">РАЗОБРАТЬ ПО ПОЛЯМ ↑</button>
         </div>
 
         <div class="group">
             <label>Image URL</label>
             <input id="img" type="text" oninput="generate()" placeholder="Paste image link here...">
-            <button class="upload-btn" onclick="window.open('https://oeg.optimove.net/#/category/One-to-One_Campaigns/templates/show/15?brandId=Obbaltics&folderId=12&typeId=8&search=&channelId=15', '_blank')">
+            <button class="upload-btn" onclick="window.open('https://obbaltics.optimove.net/#/category/One-to-One_Campaigns/templates/optimail?brandId=Olybet&folderId=2&typeId=7&templateId=1263&onlyedit=true', '_blank')">
                 ☁️ Upload in Optimove
             </button>
         </div>
@@ -110,146 +119,132 @@
 </div>
 
 <script>
-    const template = `<div class="popup" style="text-align: left; display: inline-block; font-family: 'Montserrat', sans-serif; background-color: #292935; border-radius: 12px; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; font-size: 14px; padding: 0; overflow: hidden;"><div style="text-align: center;"><img src="[IMG LINK]" alt="Promo" style="width: 100%; height: auto; display: block;"></div><div style="padding: 25px 25px 35px 25px; color: #ffffff; text-align: left;"><p style="margin: 0 0 10px 0; font-size: 14px; color: #e0e0e0; font-weight: 600;">[SUB HEADLINE]</p><h2 style="margin: 0 0 15px 0; font-family: 'Bebas Neue Pro', sans-serif; font-size: 34px; line-height: 1.1; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">[HEADLINE]</h2><p style="margin: 0 0 30px 0; font-size: 15px; line-height: 1.6; color: #d0d0d0;">[MAIN TEXT]</p>[CTA_BLOCK]</div></div><style>#modal-title { display: none !important; } #modal-background { background: none !important; text-align: center; }</style>`;
+    // --- КОНФИГУРАЦИЯ FIREBASE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAPU-R6OJIAVtem_hJVJ4ZnjxFk_tpGBvs",
+        authDomain: "optimoveassets.firebaseapp.com",
+        databaseURL: "https://optimoveassets-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "optimoveassets",
+        storageBucket: "optimoveassets.firebasestorage.app",
+        messagingSenderId: "523129202709",
+        appId: "1:523129202709:web:d67269418d280ceaf3461c",
+        measurementId: "G-B7PKKJ167E"
+    };
 
+    // Инициализация
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const assetsRef = database.ref('shared_assets');
+
+    // Шаблоны
+    const template = `<div class="popup" style="text-align: left; display: inline-block; font-family: 'Montserrat', sans-serif; background-color: #292935; border-radius: 12px; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); position: relative; font-size: 14px; padding: 0; overflow: hidden;"><div style="text-align: center;"><img src="[IMG LINK]" alt="Promo" style="width: 100%; height: auto; display: block;"></div><div style="padding: 25px 25px 35px 25px; color: #ffffff; text-align: left;"><p style="margin: 0 0 10px 0; font-size: 14px; color: #e0e0e0; font-weight: 600;">[SUB HEADLINE]</p><h2 style="margin: 0 0 15px 0; font-family: 'Bebas Neue Pro', sans-serif; font-size: 34px; line-height: 1.1; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; color: #ffffff;">[HEADLINE]</h2><p style="margin: 0 0 30px 0; font-size: 15px; line-height: 1.6; color: #d0d0d0;">[MAIN TEXT]</p>[CTA_BLOCK]</div></div><style>#modal-title { display: none !important; } #modal-background { background: none !important; text-align: center; }</style>`;
     const ctaSubTemplate = `<a href="[LINK]" target="_blank" style="text-decoration: none; display: block;"><span style="display: block; width: 100%; background: linear-gradient(90deg, #1CFF47 0%, #25BD95 100%); color: #000000; padding: 16px 0; font-weight: 800; font-family: 'Montserrat', sans-serif; font-size: 18px; border-radius: 6px; text-align: center; text-transform: uppercase; box-shadow: 0 10px 20px -5px rgba(28, 255, 71, 0.4);">[BUTTON TEXT]</span></a>`;
 
     const fields = ['img', 'sub', 'head', 'main', 'btn', 'link'];
     let historyStack = [];
-    let redoStack = [];
     let isProcessing = false;
 
-    function getCurrentState() {
-        const state = {};
-        fields.forEach(id => {
-            state[id] = document.getElementById(id).value;
+    // --- ЛОГИКА ОБЛАЧНОЙ БИБЛИОТЕКИ ---
+    function loadSharedAssets() {
+        assetsRef.on('value', (snapshot) => {
+            const grid = document.getElementById('assets-grid');
+            const data = snapshot.val();
+            grid.innerHTML = '';
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const item = data[key];
+                    const div = document.createElement('div');
+                    div.className = 'asset-item';
+                    div.title = item.name;
+                    div.innerHTML = item.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? `<img src="${item.url}">` : `<span>${item.name}</span>`;
+                    div.onclick = () => { document.getElementById('img').value = item.url; generate(); };
+                    div.oncontextmenu = (e) => { e.preventDefault(); if(confirm('Удалить из общей библиотеки?')) assetsRef.child(key).remove(); };
+                    grid.appendChild(div);
+                });
+            }
         });
-        state['ctaEnabled'] = document.getElementById('cta-toggle').checked;
-        return JSON.stringify(state);
     }
 
+    function addAssetToCloud() {
+        const url = document.getElementById('img').value;
+        const name = document.getElementById('asset-name').value || 'Asset';
+        if (url) {
+            assetsRef.push({ name, url });
+            document.getElementById('asset-name').value = '';
+        } else {
+            alert("Сначала вставьте ссылку в поле Image URL");
+        }
+    }
+
+    // --- ЛОГИКА РЕДАКТОРА ---
     function saveState() {
         if (isProcessing) return;
-        const currentState = getCurrentState();
-        const lastState = historyStack.length > 0 ? JSON.stringify(historyStack[historyStack.length - 1]) : null;
-
-        if (currentState !== lastState) {
-            historyStack.push(JSON.parse(currentState));
-            redoStack = []; 
+        const state = {};
+        fields.forEach(id => state[id] = document.getElementById(id).value);
+        state.cta = document.getElementById('cta-toggle').checked;
+        if (JSON.stringify(state) !== JSON.stringify(historyStack[historyStack.length-1])) {
+            historyStack.push(state);
             if (historyStack.length > 50) historyStack.shift();
         }
     }
 
-    function applyState(state) {
-        if (!state) return;
-        isProcessing = true;
-        fields.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.value = state[id] || "";
-        });
-        document.getElementById('cta-toggle').checked = state['ctaEnabled'] !== false;
-        generate(true);
-        isProcessing = false;
-    }
-
     function undo() {
         if (historyStack.length > 1) {
-            redoStack.push(historyStack.pop());
-            applyState(historyStack[historyStack.length - 1]);
-        }
-    }
-
-    function redo() {
-        if (redoStack.length > 0) {
-            const state = redoStack.pop();
-            historyStack.push(state);
-            applyState(state);
+            historyStack.pop();
+            const last = historyStack[historyStack.length-1];
+            isProcessing = true;
+            fields.forEach(id => document.getElementById(id).value = last[id]);
+            document.getElementById('cta-toggle').checked = last.cta;
+            generate(true);
+            isProcessing = false;
         }
     }
 
     function importHTML() {
         const raw = document.getElementById('import-html').value;
-        if (!raw) return alert("Сначала вставьте код!");
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(raw, 'text/html');
+        if (!raw) return;
+        const doc = new DOMParser().parseFromString(raw, 'text/html');
         try {
             isProcessing = true;
             document.getElementById('img').value = doc.querySelector('img')?.getAttribute('src') || "";
             document.getElementById('sub').value = doc.querySelector('p[style*="font-weight: 600"]')?.innerText || "";
             document.getElementById('head').value = doc.querySelector('h2')?.innerText || "";
-            let mainHtml = doc.querySelector('p[style*="line-height: 1.6"]')?.innerHTML || "";
-            document.getElementById('main').value = mainHtml.replace(/<br\s*[\/]?>/gi, "\n").trim();
-            
-            const btnEl = doc.querySelector('span[style*="text-transform: uppercase"]');
-            const linkEl = doc.querySelector('a');
-            
-            if (btnEl || linkEl) {
-                document.getElementById('cta-toggle').checked = true;
-                document.getElementById('btn').value = btnEl?.innerText || "";
-                document.getElementById('link').value = linkEl ? linkEl.getAttribute('href') : "";
-            } else {
-                document.getElementById('cta-toggle').checked = false;
-            }
-
+            document.getElementById('main').value = (doc.querySelector('p[style*="line-height: 1.6"]')?.innerHTML || "").replace(/<br\s*[\/]?>/gi, "\n").trim();
+            const btn = doc.querySelector('span[style*="text-transform: uppercase"]');
+            const link = doc.querySelector('a');
+            document.getElementById('cta-toggle').checked = !!(btn || link);
+            document.getElementById('btn').value = btn?.innerText || "";
+            document.getElementById('link').value = link?.getAttribute('href') || "";
             isProcessing = false;
             saveState();
             generate();
-            alert("Импорт завершен!");
-        } catch (e) {
-            isProcessing = false;
-            alert("Ошибка при разборе кода. Проверьте формат.");
-        }
+        } catch(e) { alert("Ошибка импорта"); isProcessing = false; }
     }
 
-    window.addEventListener('keydown', function(e) {
-        const isCmdOrCtrl = e.ctrlKey || e.metaKey;
-        if (isCmdOrCtrl && e.code === 'KeyZ' && !e.shiftKey) {
+    window.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') { e.preventDefault(); undo(); }
+        if ((e.ctrlKey || e.metaKey) && e.code === 'KeyB' && document.activeElement.id === 'main') {
             e.preventDefault();
-            undo();
-        }
-        if (isCmdOrCtrl && (e.code === 'KeyY' || (e.code === 'KeyZ' && e.shiftKey))) {
-            e.preventDefault();
-            redo();
-        }
-        if (isCmdOrCtrl && e.code === 'KeyB' && document.activeElement.id === 'main') {
-            e.preventDefault();
-            applyBold();
+            const el = document.getElementById('main');
+            const s = el.selectionStart, end = el.selectionEnd, txt = el.value;
+            el.value = txt.substring(0, s) + '<strong>' + txt.substring(s, end) + '</strong>' + txt.substring(end);
+            generate();
         }
     });
 
-    function applyBold() {
-        const el = document.getElementById('main');
-        const start = el.selectionStart, end = el.selectionEnd, text = el.value;
-        if (start === end) return;
-        el.value = text.substring(0, start) + '<strong>' + text.substring(start, end) + '</strong>' + text.substring(end);
-        el.focus();
-        el.selectionStart = start + 8; el.selectionEnd = end + 8;
-        saveState();
-        generate();
-    }
-
     function generate(skipHistory = false) {
-        const rawMainText = document.getElementById('main').value;
-        const formattedMainText = rawMainText.replace(/\n/g, '<br>') || 'Description...';
-        const isCtaEnabled = document.getElementById('cta-toggle').checked;
+        const ctaEnabled = document.getElementById('cta-toggle').checked;
+        let ctaHtml = ctaEnabled ? ctaSubTemplate.replaceAll("[LINK]", document.getElementById('link').value || '#').replaceAll("[BUTTON TEXT]", document.getElementById('btn').value || 'JOIN NOW') : "";
         
-        let ctaHtml = "";
-        if (isCtaEnabled) {
-            ctaHtml = ctaSubTemplate
-                .replaceAll("[LINK]", document.getElementById('link').value || '#')
-                .replaceAll("[BUTTON TEXT]", document.getElementById('btn').value || 'JOIN NOW');
-        }
-
         let res = template
             .replaceAll("[IMG LINK]", document.getElementById('img').value || 'https://via.placeholder.com/400x200/292935/ffffff?text=OlyBet+Promo')
             .replaceAll("[SUB HEADLINE]", document.getElementById('sub').value || 'SUB HEADLINE')
             .replaceAll("[HEADLINE]", document.getElementById('head').value || 'MAIN HEADLINE')
-            .replaceAll("[MAIN TEXT]", formattedMainText)
+            .replaceAll("[MAIN TEXT]", document.getElementById('main').value.replace(/\n/g, '<br>') || 'Description...')
             .replaceAll("[CTA_BLOCK]", ctaHtml);
 
         document.getElementById('output-code').value = res;
         document.getElementById('preview-box').innerHTML = res;
-
         if (!isProcessing && !skipHistory) {
             clearTimeout(window.saveTimeout);
             window.saveTimeout = setTimeout(saveState, 500);
@@ -260,15 +255,11 @@
         const out = document.getElementById("output-code");
         out.select();
         document.execCommand("copy");
-        const btn = document.querySelector('.copy-btn');
-        btn.innerText = "УСПЕШНО СКОПИРОВАНО!";
-        setTimeout(() => { btn.innerText = "СКОПИРОВАТЬ НОВЫЙ КОД"; }, 1500);
+        document.querySelector('.copy-btn').innerText = "УСПЕШНО СКОПИРОВАНО!";
+        setTimeout(() => { document.querySelector('.copy-btn').innerText = "СКОПИРОВАТЬ НОВЫЙ КОД"; }, 1500);
     }
 
-    window.onload = () => {
-        saveState();
-        generate();
-    };
+    window.onload = () => { loadSharedAssets(); generate(); };
 </script>
 </body>
 </html>
