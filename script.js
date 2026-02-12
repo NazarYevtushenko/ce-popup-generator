@@ -19,20 +19,40 @@ function loadSharedAssets() {
         const display = document.getElementById('assets-display');
         const data = snapshot.val();
         display.innerHTML = '';
+
         if (data) {
             const folders = {};
+            // Группируем данные
             Object.keys(data).forEach(key => {
                 const item = data[key];
                 const fName = item.folder || 'Общие';
                 if (!folders[fName]) folders[fName] = [];
                 folders[fName].push({ ...item, key });
             });
+
+            // Рендерим папки
             Object.keys(folders).forEach(fName => {
-                const fDiv = document.createElement('div');
-                fDiv.className = 'folder-group';
-                fDiv.innerHTML = `<div class="folder-title">${fName}</div>`;
-                const itemsBox = document.createElement('div');
-                itemsBox.className = currentView === 'grid' ? 'assets-grid' : 'assets-list';
+                const folderGroup = document.createElement('div');
+                folderGroup.className = 'folder-group';
+                
+                // Заголовок папки (как в проводнике)
+                const header = document.createElement('div');
+                header.className = 'folder-header';
+                header.innerHTML = `
+                    <span class="folder-icon">📂</span>
+                    <span class="folder-title">${fName}</span>
+                    <span style="font-size: 10px; color: #999;">(${folders[fName].length})</span>
+                `;
+                
+                // Логика открытия/закрытия
+                header.onclick = () => {
+                    folderGroup.classList.toggle('open');
+                };
+
+                const content = document.createElement('div');
+                content.className = 'folder-content';
+                content.className += currentView === 'grid' ? ' assets-grid' : ' assets-list';
+
                 folders[fName].forEach(item => {
                     const div = document.createElement('div');
                     if (currentView === 'grid') {
@@ -42,12 +62,25 @@ function loadSharedAssets() {
                         div.className = 'asset-list-item';
                         div.innerHTML = `<img src="${item.url}"> <span>${item.name}</span>`;
                     }
-                    div.onclick = () => { document.getElementById('img').value = item.url; generate(); };
-                    div.oncontextmenu = (e) => { e.preventDefault(); if(confirm('Удалить?')) assetsRef.child(item.key).remove(); };
-                    itemsBox.appendChild(div);
+                    
+                    div.onclick = (e) => {
+                        e.stopPropagation(); // Чтобы папка не закрылась при выборе файла
+                        document.getElementById('img').value = item.url;
+                        generate();
+                    };
+                    
+                    div.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if(confirm('Удалить этот ассет?')) assetsRef.child(item.key).remove();
+                    };
+                    
+                    content.appendChild(div);
                 });
-                fDiv.appendChild(itemsBox);
-                display.appendChild(fDiv);
+
+                folderGroup.appendChild(header);
+                folderGroup.appendChild(content);
+                display.appendChild(folderGroup);
             });
         }
     });
@@ -139,5 +172,6 @@ window.addEventListener('keydown', e => {
         generate();
     }
 });
+
 
 window.onload = () => { loadSharedAssets(); generate(); };
